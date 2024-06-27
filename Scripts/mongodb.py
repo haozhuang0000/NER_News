@@ -1,4 +1,3 @@
-from dotenv import load_dotenv, find_dotenv
 from pymongo import MongoClient
 import os
 import json
@@ -7,6 +6,7 @@ import uuid
 import bson
 from bson.binary import Binary, UuidRepresentation
 import pandas as pd
+from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv())
 
 class MongoDBHandler:
