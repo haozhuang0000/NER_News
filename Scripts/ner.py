@@ -243,7 +243,7 @@ if __name__ == "__main__":
     out_col = args.output
     collections = ['News']
 
-    logger = Log("NER").getlog()
+    logger = Log(f'{os.path.basename(__file__)}').getlog()
     logger.info(f"NER in a full-run.")
 
     for collection_name in collections:

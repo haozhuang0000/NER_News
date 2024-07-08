@@ -1,3 +1,4 @@
+import torch
 model_name = r'D:\MyGithub\NV-Embed-v1'
 
 batch_size = 8

@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 import pandas as pd
@@ -9,10 +11,10 @@ from pymilvus import (
     MilvusClient
 )
 import time
-
+from logger import Log
 from VDB_Common import MilvusDB
 from Model import NVEmbed
-from ..Config.config import *
+from Scripts.Config.config import *
 
 from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv())
@@ -31,50 +33,51 @@ def batch_insert(col_, entities, batch_size=2000):
         print(f"Done {batch}")
 
 def prepare_data(embeddings):
-    df_company = pd.read_csv(r'../../_static/all_company_names_v3_cleaned.csv')
+    df_company = pd.read_csv(r'../../_static/company_name.csv')
+    df_company = df_company.sample(5)
 
     ## Full
-    comp_df = df_company[['u3_num', 'Company_name']].dropna()
-    comp_df['u3id_type'] = comp_df.u3_num.apply(lambda x: str(x) + "_full")
-    u3_id = list(comp_df.u3_num)
+    comp_df = df_company[['CompanyID', 'Company_name']].dropna()
+    comp_df['companyid_type'] = comp_df.CompanyID.apply(lambda x: str(x) + "_full")
+    u3_id = list(comp_df.CompanyID)
     comp_name = list(comp_df.Company_name)
-    comp_id_type = list(comp_df.u3id_type)
+    comp_id_type = list(comp_df.companyid_type)
 
     ## Clean
-    cleancomp_df = df_company[['u3_num', 'clean_name']].dropna()
-    cleancomp_df['u3id_type'] = cleancomp_df.u3_num.apply(lambda x: str(x) + "_clean")
-    clean_u3_id = list(cleancomp_df.u3_num)
+    cleancomp_df = df_company[['CompanyID', 'clean_name']].dropna()
+    cleancomp_df['companyid_type'] = cleancomp_df.CompanyID.apply(lambda x: str(x) + "_clean")
+    clean_u3_id = list(cleancomp_df.CompanyID)
     clean_name = list(cleancomp_df.clean_name)
-    clean_name_id_type = list(cleancomp_df.u3id_type)
+    clean_name_id_type = list(cleancomp_df.companyid_type)
 
     ## Clean_s
-    cleancomp_s_df = df_company[['u3_num', 'clean_name_stricter_suffix']].dropna()
-    cleancomp_s_df['u3id_type'] = cleancomp_s_df.u3_num.apply(lambda x: str(x) + "_clean_s")
-    clean_s_u3_id = list(cleancomp_s_df.u3_num)
+    cleancomp_s_df = df_company[['CompanyID', 'clean_name_stricter_suffix']].dropna()
+    cleancomp_s_df['companyid_type'] = cleancomp_s_df.CompanyID.apply(lambda x: str(x) + "_clean_s")
+    clean_s_u3_id = list(cleancomp_s_df.CompanyID)
     clean_name_strict = list(cleancomp_s_df.clean_name_stricter_suffix)
-    clean_name_s_id_type = list(cleancomp_s_df.u3id_type)
+    clean_name_s_id_type = list(cleancomp_s_df.companyid_type)
 
     ## Common
-    common_df = df_company[['u3_num', 'Common_Name']].dropna()
-    common_df['u3id_type'] = common_df.u3_num.apply(lambda x: str(x) + "_common")
+    common_df = df_company[['CompanyID', 'Common_Name']].dropna()
+    common_df['companyid_type'] = common_df.CompanyID.apply(lambda x: str(x) + "_common")
 
-    com_id = list(common_df.u3_num)
+    com_id = list(common_df.CompanyID)
     com_name = list(common_df.Common_Name)
-    com_name_id_type = list(common_df.u3id_type)
+    com_name_id_type = list(common_df.companyid_type)
 
     ## tickers
 
     df = df_company.rename(columns={'U3_COMPANY_NUMBER': 'U3_Company_Number'}).drop(
-        columns=['Unnamed: 0', 'Prime_exchange', 'U4_COMPANY_ID'])
-    df_company = df_company.rename(columns={'Company_name': 'Company_Name'})
+        columns=['Unnamed: 0', 'Prime_exchange'])
+    # df_company = df_company.rename(columns={'Company_name': 'Company_Name'})
     duplicates = df.duplicated('Ticker', keep=False)
     df_cleaned = df[~duplicates]
-    df_cleaned = df_cleaned[['u3_num', 'Ticker']].dropna()
-    df_cleaned['u3id_type'] = df_cleaned.u3_num.apply(lambda x: str(x) + "_ticker")
+    df_cleaned = df_cleaned[['CompanyID', 'Ticker']].dropna()
+    df_cleaned['companyid_type'] = df_cleaned.CompanyID.apply(lambda x: str(x) + "_ticker")
 
-    tic_id = list(df_cleaned.u3_num)
+    tic_id = list(df_cleaned.CompanyID)
     tic_name = list(df_cleaned.Ticker)
-    tic_name_id_type = list(df_cleaned.u3id_type)
+    tic_name_id_type = list(df_cleaned.companyid_type)
 
     ## full
     full_name_embedding = embeddings.embed_documents(comp_name)
@@ -131,16 +134,15 @@ def prepare_data(embeddings):
 
 
 
-def creaet_NER_Mapping(embeddings):
+def creaet_NER_Mapping(embeddings, vdb_name):
 
     fields = [
-        FieldSchema(name="u3id_type", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=100),
-        FieldSchema(name="u3_id", dtype=DataType.DOUBLE, auto_id=False, max_length=100),
+        FieldSchema(name="companyid_type", dtype=DataType.VARCHAR, is_primary=True, auto_id=False, max_length=100),
+        FieldSchema(name="companyid", dtype=DataType.DOUBLE, auto_id=False, max_length=100),
         FieldSchema(name="company_name", dtype=DataType.VARCHAR, max_length=100),
-        FieldSchema(name="Type", dtype=DataType.VARCHAR, max_length=100),
+        FieldSchema(name="type", dtype=DataType.VARCHAR, max_length=100),
         FieldSchema(name="embeddings", dtype=DataType.FLOAT_VECTOR, dim=4096)
     ]
-    vdb_name = "NER_Mapping"
     col_ = milvusdb._connect_vdb(vdb_name,
                                  description='NER_Mapping_Companies',
                                  fields=fields)
@@ -153,14 +155,15 @@ def creaet_NER_Mapping(embeddings):
     batch_insert(col_, com_name_entities)
     batch_insert(col_, tic_entities)
 
-    milvusdb._add_index(vdb_name, pk_name='u3id_type')
+    milvusdb._add_index(vdb_name, pk_name='companyid_type')
 
 
 if __name__ == '__main__':
-
+    logger = Log(f'{os.path.basename(__file__)}').getlog()
     milvusdb = MilvusDB()
-    ## Model Config
+    # Model Config
 
+    logger.info(f'Loading Embedding Model...')
     embeddings = NVEmbed(
         model_name=model_name,
         model_kwargs=model_kwargs,
@@ -174,25 +177,31 @@ if __name__ == '__main__':
     embeddings.eos_token = embeddings.client.tokenizer.eos_token
     EMBEDDING_DIMENSION = 4096
 
-    creaet_NER_Mapping(embeddings)
+    vdb_name = "NER_Mapping_Test"
 
-    ## Querying
+    logger.info('Start creating vector database...')
+    creaet_NER_Mapping(embeddings, vdb_name=vdb_name)
+    logger.info('Finish creating vector database')
+    #
+
+    # ## Querying
+    logger.info('Start searching vector database!')
     vector_to_search = embeddings.embed_query('Tesla Inc')
-
     client = milvusdb.client
+    client.load_collection(vdb_name)
     start_time = time.time()
     search_params = {
         "metric_type": "L2",
         "params": {"nprobe": 256}, ## set as 4 * sqrt(n) n is the len of nlist
     }
     result = client.search(
-        collection_name="NER_Mapping",
+        collection_name=vdb_name,
         data=[vector_to_search],
         anns_field="embeddings",
         search_params=search_params,
         limit=30,
-        output_fields=["u3_id", "company_name", 'Type']
+        output_fields=["companyid", "company_name", 'type']
     )
     end_time = time.time()
-
+    logger.info(f'Get result about: {end_time - start_time}s')
 

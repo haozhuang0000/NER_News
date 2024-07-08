@@ -12,10 +12,10 @@ class Log(object):
 
         # create a handler
         self.log_time = time.strftime("%Y%m%d")
-        file_dir = os.getcwd() + "./log"
+        file_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../log")
 
         if not os.path.exists(file_dir):
-            os.mkdir(file_dir)
+            os.makedirs(file_dir)
 
         self.file_dir = file_dir
         self.log_path = os.path.join(self.file_dir, self.name + "_" + self.log_time + ".log")

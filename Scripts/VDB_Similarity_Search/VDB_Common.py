@@ -15,13 +15,14 @@ _ = load_dotenv(find_dotenv())
 
 class MilvusDB():
 
-    def __init__(self, host=os.environ['VDB_HOST'], port="19430"):
+    def __init__(self, host=os.environ['VDB_HOST'], port="19530"):
 
         self.host = host
         self.port = port
-        self.client = MilvusClient(host)
+        self.client = MilvusClient("http://" + host + ":" + port)
 
     def _connect_vdb(self, col_name, **kwargs):
+
         connections.connect("default", host=self.host, port=self.port)
         description = kwargs['description']
         fields = kwargs['fields']
@@ -31,7 +32,7 @@ class MilvusDB():
 
     def _drop_vdb(self, col_name):
 
-        utility.drop_collection(col_name)
+        self.client.drop_collection(col_name)
 
     def _add_index(self, col, nlist=4096, **kwargs):
 
@@ -50,3 +51,21 @@ class MilvusDB():
             collection_name=col,
             index_params=index_params
         )
+
+    def vectorsearch(self, embeddings, ner_company_name, col_name='NER_Mapping',
+                     limit=30, output_field=["u3_id", "company_name", 'Type']):
+
+        vector_to_search = embeddings.embed_query(ner_company_name)
+        search_params = {
+            "metric_type": "L2",
+            "params": {"nprobe": 256},
+        }
+        result = self.client.search(
+            collection_name=col_name,
+            data=[vector_to_search],
+            anns_field="embeddings",
+            search_params=search_params,
+            limit=limit,
+            output_fields=output_field
+        )
+        return result
