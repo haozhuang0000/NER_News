@@ -11,30 +11,24 @@ try:
     nltk.data.find('tokenizers/punkt')
 except:
     nltk.download('punkt')
-from joblib import Parallel, delayed
 from nltk import sent_tokenize
-from nltk.stem.porter import *
-import json
 from logger import Log
 from tqdm import tqdm
-import numpy as np
 import argparse
 import time
 import spacy
 import re
 import os
+import pandas as pd
 from dotenv import load_dotenv, find_dotenv
-from mongodb import MongoDBHandler
+from Mongodb.mongodb import MongoDBHandler
 from typing import List, Dict
-
+import json
 _ = load_dotenv(find_dotenv())
 
 # set nlp_model as global variable
-# nlp_model = spacy.load(r"en_core_web_sm")
-# nlp_model = spacy.load(r"\\dirac2\CRI3\nlp\data\API_Output\full_run\Others\final_v2")
+
 # define functions
-
-
 class NER_Ruler:
     """
     A class to enhance a spaCy NLP model with custom Named Entity Recognition (NER) rules.
@@ -92,17 +86,66 @@ class NER_Ruler:
 
 class NER_TextProcessor(MongoDBHandler, NER_Ruler):
 
-    def __init__(self, in_col, out_col, inserted_threshold):
-        MongoDBHandler.__init__(self)
-        NER_Ruler.__init__(self)
+    def __init__(self, in_col: str, out_col: str, inserted_threshold: int=1000) -> None:
+
+        super().__init__()
         self.get_model()
-        self.in_col = in_col
-        self.out_col = out_col
-        self.out_db = 'Text_Preprocessed'
+        self.raw_db = self.get_database('local')
+        self.db = self.get_database('Text_Preprocessed')
+
+        self.in_col = self.raw_db[in_col]
+        self.out_col = self.db[out_col]
+
         self.inserted_threshold = inserted_threshold
+        self.logger = Log(f'{os.path.basename(__file__)}').getlog()
 
+    def transform_data_to_results_dict(self, find_cursor: list) -> dict:
 
-    def is_entity(self, doc):
+        results_dict = {"_id": [], "Date": [], "Title": [], "Author": [], "Content": [], "Category": []}
+
+        for result in find_cursor:
+            results_dict["_id"].append(result["_id"])
+            results_dict["Date"].append(result["Date"])
+            results_dict["Title"].append(' '.join(result["Title"].split()))
+            results_dict["Author"].append(result["Author"])
+            results_dict["Content"].append(' '.join(result["Content"].split()))
+            results_dict["Category"].append(result["Category"])
+
+        return results_dict
+
+    def get_raw_text_from_mongo(self) -> list:
+
+        input_col = self.in_col
+        check_col_for_ner = self.out_col
+
+        pipeline = [{"$group": {"_id": "$_id"}}]
+        check_col_ner_ids = list(check_col_for_ner.aggregate(pipeline))
+        input_col_ids = list(input_col.aggregate(pipeline))
+
+        check_col_ner_ids_list = [item["_id"] for item in check_col_ner_ids]
+        input_col_ids_list = [item["_id"] for item in input_col_ids]
+
+        clear_input_list = list(set(input_col_ids_list).difference(set(check_col_ner_ids_list)))
+
+        results_dict = {"_id": [], "Date": [], "Title": [], "Author": [], "Content": [], "Category": []}
+
+        if len(clear_input_list) < 5e5:
+            find_cursor = input_col.find({"_id": {'$in': clear_input_list}})
+            results_dict = self.transform_data_to_results_dict(find_cursor)
+        else:
+            n_cores = 20  # number of splits
+            total_size = len(clear_input_list)
+            batch_size = round(total_size / n_cores + 0.5)
+            skips = range(0, n_cores * batch_size, batch_size)
+            for skip_n in skips:
+                find_cursor = input_col.find({"_id": {'$in': clear_input_list[skip_n: skip_n + batch_size]}})
+                temp_dict = self.transform_data_to_results_dict(find_cursor)
+                for key in temp_dict.keys():
+                    results_dict[key].extend(temp_dict[key])
+
+        return list(pd.DataFrame(results_dict).to_dict('index').values())
+
+    def is_entity(self, doc: str) -> bool:
         ##
         possible_num_entity = [
             '888', '104', '365', '20-20', '24', '9278', '525', '521', '7', '360', '1700', '724', '8888', '77', '600', '2',
@@ -122,8 +165,7 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
 
         return True
 
-
-    def find_company_name(self, content_text):
+    def find_company_name(self, content_text: str) -> tuple[str, str, str]:
         company_entity = []
         econ_entity = []
         ner_words = self.nlp_model(content_text)
@@ -138,7 +180,7 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
 
         return content_text, company_entity, econ_entity
 
-    def replace_company_name(self, tokenized_text):
+    def replace_company_name(self, tokenized_text: str) -> tuple[list, list, list]:
         sentence_list = []
         companies_list = []
         econs_list = []
@@ -151,7 +193,7 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
 
         return sentence_list, companies_list, econs_list
 
-    def generate_text_sentence(self, pair):
+    def generate_text_sentence(self, pair: dict) ->dict:
         curr_dict = pair
         text = curr_dict["Content"]
         re_websites = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
@@ -166,7 +208,7 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
             text = text.replace(get_dot_list[i], replace_dot_list[i])
 
         text = re.sub(r'([^0-9])\.([^0-9])', r'\1. \2', text)
-        text = re.sub("-{2,}", ".", text)
+        text = re.sub("-{2,}", "..", text)
         text = re.sub(r'([0-9A-Za-z])\n([0-9A-Za-z])', r'\1.\n\n \2', text)
         text = re.sub(r'([0-9A-Za-z])\n\n([0-9A-Za-z])', r'\1.\n\n \2', text)
 
@@ -195,10 +237,9 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
         }
         return ner_dict
 
-    def batch_run(self, batch):
+    def batch_helper(self, batch: list) -> int:
 
-        out_db = self.get_database(self.out_db)
-        ner_col = out_db[self.out_col]
+        ner_col = self.out_col
         ner_input_dict_list = []
         inserted_num = 0
         inserted_per_round = 0
@@ -221,37 +262,12 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
             print(e)
         return inserted_num
 
-    def split_iter(self, list1, batch_num):
-        split_points = np.linspace(0, len(list1), batch_num + 1, dtype='uint64')
-        for i in range(batch_num):
-            yield list1[split_points[i]: split_points[i + 1]]
-# implement
-if __name__ == "__main__":
+    def run(self) -> None:
 
-    ## set parameters
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--collections',
-                        nargs='+',
-                        type=str,
-                        help="collection name in MongoDB")
-    parser.add_argument('--output',
-                        default=r"ner_out",
-                        type=str,
-                        help="Specify output ner collection")
-    args, unknown = parser.parse_known_args()
-    collections = args.collections
-    out_col = args.output
-    collections = ['News']
-
-    logger = Log(f'{os.path.basename(__file__)}').getlog()
-    logger.info(f"NER in a full-run.")
-
-    for collection_name in collections:
-        # load data
+        logger = Log(f'{os.path.basename(__file__)}').getlog()
+        logger.info(f"NER in a full-run.")
         start_time = time.time()
-        ner_text_processor = NER_TextProcessor(in_col=collection_name, out_col=out_col, inserted_threshold=1000)
-        logger.info(f"{collection_name} :loading data from mongodb...")
-        list_of_dict = ner_text_processor.get_raw_text_from_mongo(collection_name, out_col)
+        list_of_dict = self.get_raw_text_from_mongo()
         logger.info("the list of dict size is {}".format(len(list_of_dict)))
         logger.info("load data from mongodb time: {}".format(time.time() - start_time))
 
@@ -263,6 +279,23 @@ if __name__ == "__main__":
             logger.info("processing data...")
             # parallel_results = Parallel(n_jobs=5)(delayed(batch_helper)(batch) for batch in split_iter(list_of_dict, 5))
             # logger.info("{} articles added to ner database".format(sum(parallel_results)))
-            # logger.info("{} finished in time: {}".format(collection_name, time.time() - start_time))
-            ner_text_processor.batch_run(list_of_dict)
-    logger.info("all done")
+            logger.info("{} finished in time: {}".format("NER", time.time() - start_time))
+            self.batch_helper(list_of_dict)
+        logger.info("all done")
+
+# implement
+if __name__ == "__main__":
+
+    ## set parameters
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input',
+                        nargs='News',
+                        type=str,
+                        help="collection name in MongoDB")
+    parser.add_argument('--output',
+                        default="ner_out",
+                        type=str,
+                        help="Specify output ner collection")
+    args, unknown = parser.parse_known_args()
+    ner_rawdata_processor = NER_TextProcessor(in_col=args.input, out_col=args.output)
+    ner_rawdata_processor.run()

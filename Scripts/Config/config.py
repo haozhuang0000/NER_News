@@ -1,5 +1,5 @@
 import torch
-model_name = r'D:\MyGithub\NV-Embed-v1'
+model_name = 'nvidia/NV-Embed-v1'
 
 batch_size = 8
 model_kwargs = {'device': 'cuda', "trust_remote_code": True, "model_kwargs": {"torch_dtype": torch.bfloat16}}

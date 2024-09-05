@@ -1,0 +1,147 @@
+Name,ID
+Australia,1
+China,2
+Hong Kong,3
+India,4
+Indonesia,5
+Japan,6
+Malaysia,7
+Philippines,8
+Singapore,9
+South Korea,10
+Taiwan,11
+Thailand,12
+United States of America,15
+Canada,16
+New Zealand,17
+Vietnam,18
+Sri Lanka,19
+Pakistan,20
+Bangladesh,22
+Austria,23
+Bahrain,24
+Belgium,25
+Bosnia and Herzegovina,26
+Botswana,27
+Bulgaria,29
+Croatia,30
+Cyprus,31
+Czech Republic,32
+Denmark,33
+Egypt,34
+Estonia,35
+Finland,36
+France,37
+Germany,38
+Ghana,39
+Greece,40
+Guernsey,41
+Hungary,42
+Iceland,43
+Iraq,44
+Ireland,45
+Israel,46
+Italy,47
+Jordan,48
+Kazakhstan,49
+Kenya,50
+Kuwait,51
+Latvia,52
+Lithuania,54
+Luxembourg,55
+Macedonia,56
+Malawi,57
+Malta,58
+Mauritius,59
+Montenegro,60
+Morocco,61
+Mozambique,62
+Namibia,63
+Netherlands,64
+Nigeria,65
+Norway,66
+Oman,67
+Poland,69
+Portugal,70
+Qatar,71
+Romania,72
+Russia,73
+Saudi Arabia,74
+Serbia,75
+Slovakia,76
+Slovenia,77
+South Africa,78
+Spain,79
+Sweden,81
+Switzerland,82
+United Republic of Tanzania,83
+Tunisia,84
+Turkey,85
+Uganda,86
+Ukraine,87
+United Arab Emirates,88
+United Kingdom,89
+Zambia,90
+Argentina,92
+Barbados,93
+Bahamas,94
+Brazil,95
+Colombia,96
+Chile,97
+Costa Rica,98
+Jamaica,100
+Cayman Islands,101
+Mexico,102
+Peru,103
+Panama,104
+Uruguay,106
+Venezuela,107
+British Virgin Islands,108
+Bermuda,112
+Angola,116
+Azerbaijan,117
+Belize,120
+Curacao,123
+Dominican Republic,124
+Falkland Islands,125
+Faroe Islands,126
+Gabon,127
+French Guiana,128
+Gibraltar,129
+Isle Of Man,130
+Jersey,131
+Cambodia,132
+Liechtenstein,133
+Monaco,134
+Macau,136
+Niger Republic,137
+Papua New Guinea,138
+Puerto Rico,139
+Reunion,140
+Sudan,141
+Sierra Leone,143
+Turks and Caicos Islands,146
+Togo,147
+Virgin Islands,149
+Mongolia,150
+Laos,152
+Cameroon,156
+Moldova,162
+Rwanda,163
+Georgia,165
+Madagascar,167
+Greenland,168
+Myanmar,173
+Asia Pacific (Developed),501
+Asia Pacific (Emerging),502
+North America,503
+Europe,504
+Latin America & Caribbean,505
+Sub-Saharan Africa,506
+"Middle East, North Africa & Central Asia",507
+Eurozone,541
+Non-Eurozone,542
+Latin America,551
+Caribbean,552
+Non-MENA,573
+MENA,574
