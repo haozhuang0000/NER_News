@@ -289,7 +289,7 @@ if __name__ == "__main__":
     ## set parameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--input',
-                        nargs='News',
+                        default='News',
                         type=str,
                         help="collection name in MongoDB")
     parser.add_argument('--output',
