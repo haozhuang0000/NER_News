@@ -24,6 +24,7 @@ Option 1:
 4. run `generate_mapping_company.py --embedding_method Local` to do similarity calculation
 
 Option 2:
-- run code in one shot
 
-run `run.py --embedding_method Local` for all functionality
+run code in one shot:
+
+- run `main.py --embedding_method Local` for all functionality
