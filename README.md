@@ -1,4 +1,5 @@
 # NER_News
+This repository focuses on recognizing entities in news articles and mapping them to predefined entity names with corresponding IDs.
 
 ## install environment
 
