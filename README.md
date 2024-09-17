@@ -1,7 +1,7 @@
 # NER_News
 This repository focuses on recognizing entities in news articles and mapping them to predefined entity names with corresponding IDs.
 
-## install environment
+## Install environment
 
 - Please follow the steps to download Mongodb: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-windows/
 - Please follow the steps to download Milvus: https://milvus.io/docs/install_standalone-docker.md
