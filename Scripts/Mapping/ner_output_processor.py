@@ -17,7 +17,7 @@ class NerOutputProcessor(MongoDBHandler):
     def __init__(self, in_col: str, out_col: str, inserted_threshold: int=1000) -> None:
 
         super().__init__()
-        self.db = self.get_database('Text_Preprocessed')
+        self.db = self.get_database()
         self.in_col = self.db[in_col]
         self.out_col = self.db[out_col]
         self.inserted_threshold = inserted_threshold

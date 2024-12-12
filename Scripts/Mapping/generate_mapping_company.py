@@ -19,7 +19,7 @@ from Mongodb.mongodb import MongoDBHandler
 from Mapping.helper_functions import *
 from VDB_Similarity_Search.Model import NVEmbed
 from VDB_Similarity_Search.VDB_Common import MilvusDB
-
+import os
 class SimilarityMapping(MongoDBHandler, MilvusDB):
 
     def __init__(self, in_col: str, out_col: str,
@@ -39,7 +39,7 @@ class SimilarityMapping(MongoDBHandler, MilvusDB):
 
         """
         super().__init__()
-        self.db = self.get_database('Text_Preprocessed')
+        self.db = self.get_database()
         self.in_col = self.db[in_col]
         self.out_col = self.db[out_col]
         self.ner_mapping_col = self.db[ner_mapped_col]
@@ -567,7 +567,7 @@ class SimilarityMapping(MongoDBHandler, MilvusDB):
             start_time = time.time()
             self.logger.info("processing data...")
             with parallel_backend('threading', n_jobs=3):
-                parallel_results = Parallel(n_jobs=3)(
+                parallel_results = Parallel(n_jobs=1)(
                     delayed(self.batch_helper)(batch) for batch in split_iter(list_of_dict, 20))
             self.logger.info("{} sentences added to selected_sentences database".format(sum(parallel_results)))
             # [self.batch_helper(batch) for batch in split_iter(list_of_dict, 5)]

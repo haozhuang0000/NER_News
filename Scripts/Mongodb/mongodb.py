@@ -17,7 +17,7 @@ class MongoDBHandler:
         self.DB_URL = os.environ['LOCAL_URL']
         self.client = MongoClient(self.DB_URL)
 
-    def get_database(self, DB='local'):
+    def get_database(self, DB=os.environ['DB']):
         """
         :param DB: Your mongodb database, default is local
         """
@@ -56,7 +56,7 @@ class MongoDBHandler:
         with open(raw_data_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
 
-        db = self.get_database('local')
+        db = self.get_database()
         col = db['News']
         out_data = [self.create_id(i) for i in data]
         try:

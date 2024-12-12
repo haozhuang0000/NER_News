@@ -90,8 +90,8 @@ class NER_TextProcessor(MongoDBHandler, NER_Ruler):
 
         super().__init__()
         self.get_model()
-        self.raw_db = self.get_database('local')
-        self.db = self.get_database('Text_Preprocessed')
+        self.raw_db = self.get_database()
+        self.db = self.get_database()
 
         self.in_col = self.raw_db[in_col]
         self.out_col = self.db[out_col]
