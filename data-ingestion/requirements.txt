@@ -1,0 +1,5 @@
+apache-airflow==2.10.4
+Flask==2.2.5
+newsdataapi==0.1.21
+pymongo==4.8.0
+confluent-kafka

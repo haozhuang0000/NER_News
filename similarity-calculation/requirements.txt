@@ -1,0 +1,11 @@
+huggingface-hub==0.24.6
+joblib==1.4.2
+langchain==0.2.16
+langchain-community==0.2.16
+Levenshtein==0.25.1
+pandas==2.2.2
+pymilvus==2.4.6
+pymongo==4.8.0
+requests==2.32.3
+sentence-transformers==3.0.1
+tqdm==4.66.5
