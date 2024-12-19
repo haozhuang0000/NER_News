@@ -19,7 +19,6 @@ import time
 
 from logger import Log
 from nltk import sent_tokenize
-from tqdm import tqdm
 
 from ner.config import (
     DEFAULT_RAW_DATA_COLLECTION,

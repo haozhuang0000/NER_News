@@ -2,7 +2,7 @@
 This script serves for similarity mapping.
 
 for example:
-    1. We have `AAPL` recognized by similarity_calculation.
+    1. We have `AAPL` recognized by ner.
     2. we want to map `AAPL` to `Apple Inc`, and give a specific ID.
 """
 
@@ -13,9 +13,9 @@ from joblib import Parallel, delayed, parallel_backend
 import Levenshtein
 import copy
 
-from similarity_calculation.processing.logger import Log
-from similarity_calculation.db import database, create_id, batch_upsert, upsert_record
-from similarity_calculation.processing.Mapping.helper_functions import (
+from ner.processing.logger import Log
+from ner.db import database, create_id, batch_upsert, upsert_record
+from ner.processing.Mapping.helper_functions import (
     get_entity_names,
     first_word,
     rm_none_entity,
@@ -25,15 +25,15 @@ from similarity_calculation.processing.Mapping.helper_functions import (
     clean_string,
     clean_string_len1,
 )
-from similarity_calculation.processing.VDB_Similarity_Search.Model import NVEmbed
-from similarity_calculation.processing.VDB_Similarity_Search.VDB_Common import MilvusDB
-from similarity_calculation.config import (
+from ner.processing.VDB_Similarity_Search.Model import NVEmbed
+from ner.processing.VDB_Similarity_Search.VDB_Common import MilvusDB
+from ner.config import (
     DEFAULT_SENTENCE_SPLIT_COLLECTION,
     DEFAULT_SELECTED_SENTENCE_COLLECTION,
     DEFAULT_NER_MAPPING_COLLECTION,
     EMBEDDING_METHOD,
 )
-from similarity_calculation.models import SentenceSplit, SelectedSentence, NERMapped
+from ner.models import SentenceSplit, SelectedSentence, NERMapped
 
 
 class SimilarityMapping(MilvusDB):

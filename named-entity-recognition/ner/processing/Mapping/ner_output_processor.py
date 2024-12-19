@@ -5,7 +5,6 @@ preparing input data for similarity mapping.
 
 from joblib import Parallel, delayed
 from logger import Log
-from tqdm import tqdm
 import time
 import os
 from ner.models import SentenceSplit, NEROut
@@ -120,7 +119,7 @@ class NerOutputProcessor:
         processed_sentence_split: list[SentenceSplit] = []
 
         try:
-            for pair in tqdm(batch):
+            for pair in batch:
                 record = self.generate_sentences_info(pair)
                 processed_sentence_split.append(record)
 

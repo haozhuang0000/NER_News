@@ -3,6 +3,21 @@ from dataclasses import dataclass
 
 
 @dataclass
+class NEROut:
+    _id: Binary
+    article_id: str
+    News_Id: Binary
+    Title: str
+    Date: str
+    Content: str
+    Category: str
+    Search_q: list[str]
+    Sentence_list: list[str]
+    Companies_list: list[str]
+    Econs_list: list[str]
+
+
+@dataclass
 class NERMapped:
     _id: Binary
     U3_Company_Number: int

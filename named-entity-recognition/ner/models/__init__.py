@@ -1,5 +1,5 @@
 from ner.models.news import Article
-from ner.models.ner_out import NEROut
+from ner.models.named_entity_recognition import NEROut
 from ner.models.sentence import SentenceSplit
 
 

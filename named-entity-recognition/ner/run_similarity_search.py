@@ -1,20 +1,20 @@
 import os
 import warnings
 from huggingface_hub import login
-from similarity_calculation.config import (
+from ner.config import (
     DEFAULT_SELECTED_SENTENCE_COLLECTION,
     DEFAULT_SENTENCE_SPLIT_COLLECTION,
     EMBEDDING_METHOD,
 )
-from similarity_calculation.processing.Mapping.generate_mapping_company import (
+from ner.processing.Mapping.generate_mapping_company import (
     SimilarityMapping,
 )
 
 if EMBEDDING_METHOD == "Local":
-    from similarity_calculation.processing.VDB_Similarity_Search.Model import (
+    from ner.processing.VDB_Similarity_Search.Model import (
         NVEmbed,
     )
-    from similarity_calculation.processing.Model_Config.config import (
+    from ner.processing.Model_Config.config import (
         MODEL_NAME,
         MODEL_KWARGS,
         ENCODE_KWARGS,

@@ -2,7 +2,7 @@ import numpy as np
 from typing import TypeVar, Generator
 import string
 
-from similarity_calculation.db import database
+from ner.db import database
 
 T = TypeVar("T")
 SUFFIX_COLLECTION = "suffix"
