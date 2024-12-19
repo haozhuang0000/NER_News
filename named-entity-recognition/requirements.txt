@@ -1,0 +1,16 @@
+confluent-kafka
+deep-translator==1.11.4
+huggingface-hub==0.24.6
+joblib==1.4.2
+langchain==0.2.16
+langchain-community==0.2.16
+Levenshtein==0.25.1
+nltk==3.9.1
+pymilvus==2.4.6
+pymongo==4.8.0
+requests==2.32.3
+sentence-transformers==3.0.1
+spacy==3.7.6
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+types-confluent-kafka
